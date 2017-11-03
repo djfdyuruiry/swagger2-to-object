@@ -1,6 +1,6 @@
 {
   "name": "swagger2-to-object",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Use Swagger v2 JSON Collections to generate sample JavaScript objects for requests and responses",
   "main": "swagger2-to-object.js",
   "scripts": {
@@ -19,8 +19,5 @@
   "bugs": {
     "url": "https://github.com/djfdyuruiry/swagger2-to-object/issues"
   },
-  "homepage": "https://github.com/djfdyuruiry/swagger2-to-object#readme",
-  "dependencies": {
-    "sync-request": "^4.1.0"
-  }
+  "homepage": "https://github.com/djfdyuruiry/swagger2-to-object#readme"
 }

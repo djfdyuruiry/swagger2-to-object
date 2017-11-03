@@ -1,0 +1,26 @@
+{
+  "name": "swagger2-to-object",
+  "version": "1.0.2",
+  "description": "Use Swagger v2 JSON Collections to generate sample JavaScript objects for requests and responses",
+  "main": "swagger2-to-object.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djfdyuruiry/swagger2-to-object.git"
+  },
+  "keywords": [
+    "swagger",
+    "swagger-ui"
+  ],
+  "author": "djfdyuruiry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/djfdyuruiry/swagger2-to-object/issues"
+  },
+  "homepage": "https://github.com/djfdyuruiry/swagger2-to-object#readme",
+  "dependencies": {
+    "sync-request": "^4.1.0"
+  }
+}

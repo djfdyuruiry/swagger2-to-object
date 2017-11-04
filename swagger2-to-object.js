@@ -45,7 +45,7 @@ const isImmutable = (maybe) => false //Im.Iterable.isIterable(maybe)
 
 const isObject = (obj) => !!obj && typeof obj === "object"
 
-const getRef = (obj) => isObject(obj) ? obj["$ref"] : undefined
+const getRef = (obj) => isObject(obj) ? obj.$ref : undefined
 
 const isRef = (obj) => getRef(obj)
 
@@ -74,7 +74,7 @@ function resolveRef(refObj, refsLookup) {
     }
 }
 
-function genSchemaObject(schema, refsLookup, config = {}) {
+function genSchemaObject(schema, refsLookup, config = {}, fieldName = null) {
     if (isRef(schema)) {
         schema = resolveRef(schema, refsLookup);
     }
@@ -113,14 +113,14 @@ function genSchemaObject(schema, refsLookup, config = {}) {
                 props[name] = resolveRef(props[name], refsLookup);
             }
 
-            obj[name] = genSchemaObject(props[name], refsLookup, config);
+            obj[name] = genSchemaObject(props[name], refsLookup, config, name);
         }
 
         if (additionalProperties === true) {
             obj.additionalProp1 = {};
         } else if (additionalProperties) {
             let additionalProps = objectify(additionalProperties);
-            let additionalPropVal = genSchemaObject(additionalProps, refsLookup, config);
+            let additionalPropVal = genSchemaObject(additionalProps, refsLookup, config, fieldName);
 
             for (let i = 1; i < 4; i++) {
                 obj[`additionalProp${i}`] = additionalPropVal;
@@ -134,7 +134,7 @@ function genSchemaObject(schema, refsLookup, config = {}) {
             items = resolveRef(items, refsLookup);
         }
 
-        return [genSchemaObject(items, refsLookup, config)];
+        return [genSchemaObject(items, refsLookup, config, fieldName)];
     }
 
     if (schema["enum"]) {
@@ -145,7 +145,13 @@ function genSchemaObject(schema, refsLookup, config = {}) {
         return;
     }
 
-    return primitive(schema);
+    var value = primitive(schema);
+
+    if (fieldName && value === primitives.string() ) {
+        value = fieldName;
+    }
+
+    return value;
 }
 
 function getRefForSchema (schema, unknownTypeCounter) {

@@ -1,6 +1,6 @@
 {
   "name": "swagger2-to-object",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Use Swagger v2 JSON Collections to generate sample JavaScript objects for requests and responses",
   "main": "swagger2-to-object.js",
   "scripts": {

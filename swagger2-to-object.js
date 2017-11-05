@@ -74,9 +74,11 @@ function resolveRef(refObj, refsLookup) {
     }
 }
 
-function genSchemaObject(schema, refsLookup, config = {}, fieldName = null) {
+function genSchemaObject(schema, refsLookup, config = {}, fieldName = null, parentSchema = null, swaggerPath = null) {
     if (isRef(schema)) {
+        var ref = schema.$ref;
         schema = resolveRef(schema, refsLookup);
+        schema._$ref = ref;
     }
 
     let { type, example, properties, additionalProperties, items } = objectify(schema);
@@ -96,6 +98,10 @@ function genSchemaObject(schema, refsLookup, config = {}, fieldName = null) {
         }
     }
 
+    if (type === "file") {
+        return;
+    }
+
     if (type === "object") {
         let props = objectify(properties);
         let obj = {};
@@ -113,14 +119,14 @@ function genSchemaObject(schema, refsLookup, config = {}, fieldName = null) {
                 props[name] = resolveRef(props[name], refsLookup);
             }
 
-            obj[name] = genSchemaObject(props[name], refsLookup, config, name);
+            obj[name] = genSchemaObject(props[name], refsLookup, config, name, schema, swaggerPath);
         }
 
         if (additionalProperties === true) {
             obj.additionalProp1 = {};
         } else if (additionalProperties) {
             let additionalProps = objectify(additionalProperties);
-            let additionalPropVal = genSchemaObject(additionalProps, refsLookup, config, fieldName);
+            let additionalPropVal = genSchemaObject(additionalProps, refsLookup, config, fieldName, schema, swaggerPath);
 
             for (let i = 1; i < 4; i++) {
                 obj[`additionalProp${i}`] = additionalPropVal;
@@ -134,18 +140,42 @@ function genSchemaObject(schema, refsLookup, config = {}, fieldName = null) {
             items = resolveRef(items, refsLookup);
         }
 
-        return [genSchemaObject(items, refsLookup, config, fieldName)];
+        return [genSchemaObject(items, refsLookup, config, fieldName, schema, swaggerPath)];
     }
+
+    var value;
 
     if (schema["enum"]) {
-        schema["default"] ? schema["default"] : normalizeArray(schema["enum"])[0];
+        if (schema["default"]) {
+            value = schema["default"];
+        } else {
+            var enumValues = normalizeArray(schema["enum"]).map((v) => v.toLowerCase());
+
+            // educated guess based on parent schema reference
+            if (parentSchema && parentSchema._$ref) {
+                var parentRef = parentSchema._$ref.toLowerCase();
+                value = enumValues.find((v) => parentRef.includes(v));
+            }
+
+            // educated guess based on swagger path description
+            if (!value && swaggerPath && swaggerPath.description) {
+                var swaggerPath = 
+                    swaggerPath.description ? swaggerPath.description.toLowerCase() : "";
+
+                value = enumValues.find((v) => swaggerPath.includes(v));
+            }
+
+            if (value) {
+                return value;
+            }
+
+            value = enumValues[0];
+        }
     }
 
-    if (type === "file") {
-        return;
+    if (!value) {
+        value = primitive(schema);
     }
-
-    var value = primitive(schema);
 
     if (fieldName && value === primitives.string() ) {
         value = fieldName;
@@ -306,7 +336,7 @@ function genObjectForPathBody (swaggerPath, swaggerRefsLookup) {
         }
 
         try {
-            result.obj = genSchemaObject(p.schema, swaggerRefsLookup);
+            result.obj = genSchemaObject(p.schema, swaggerRefsLookup, {}, null, null, swaggerPath);
             result.parameter = p;
         } catch (e) {
             sampleObj = undefined;

@@ -151,6 +151,10 @@ function genSchemaObject(schema, refsLookup, config = {}, fieldName = null) {
         value = fieldName;
     }
 
+    if (typeof value === "string") {
+        value = value.toLowerCase();
+    }
+
     return value;
 }
 

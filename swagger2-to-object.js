@@ -340,8 +340,11 @@ function genObjectForPathBody (swaggerPath, swaggerRefsLookup) {
             result.parameter = p;
         } catch (e) {
             sampleObj = undefined;
-            console.log(`Error generating sample from schema: ${JSON.stringify(p.schema)}`);
-            console.log(e);
+            
+            if (options && options.debug) {
+                console.log(`Error generating sample from schema: ${JSON.stringify(p.schema)}`);
+                console.log(e);
+            }
         }
     });
 
@@ -352,25 +355,31 @@ function buildSwaggerRefsLookup(swaggerSpec) {
     var refsLookup = {};
     var refCount = 0;
 
-    console.log(`Building refs lookup for Swagger spec '${swaggerSpec.info.title}'...`)
+    if (options && options.debug) {
+        console.log(`Building refs lookup for Swagger spec '${swaggerSpec.info.title}'...`);
+    }
 
     for (var key in swaggerSpec.definitions) {
         if (swaggerSpec.definitions.hasOwnProperty(key)) {
             ref = `#/definitions/${key}`;
             schema = swaggerSpec.definitions[key];
 
-            console.log(`Schmea for ref '${ref}': `);
-            console.log(`${JSON.stringify(schema, null, 4)}`);
+            if (options && options.debug) {
+                console.log(`Schmea for ref '${ref}': `);
+                console.log(`${JSON.stringify(schema, null, 4)}`);
+            }
 
             refsLookup[ref] = schema;
             refCount++;
         }
     }
 
-    if (refCount > 0) {
-        console.log(`Found ${refCount} schema definitions in Swagger spec`)
-    } else {
-        console.log(`Swagger spec contained no schema definitions`)
+    if (options && options.debug) {
+        if (refCount > 0) {
+            console.log(`Found ${refCount} schema definitions in Swagger spec`)
+        } else {
+            console.log(`Swagger spec contained no schema definitions`)
+        }
     }
 
     return refsLookup;

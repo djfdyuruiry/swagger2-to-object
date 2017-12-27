@@ -199,7 +199,7 @@ function getRefForSchema (schema, unknownTypeCounter) {
 }
 
 function genSpecResponseObjects (swaggerSpec, options) {
-    var refsLookup = buildSwaggerRefsLookup(swaggerSpec);
+    var refsLookup = buildSwaggerRefsLookup(swaggerSpec, options);
     var specResponses = {};
     var unknownTypeCounter = 0;
     var includeUnknownTypes = options && options.includeUnknownTypes;
@@ -258,7 +258,7 @@ function genSpecResponseObjects (swaggerSpec, options) {
 }
 
 function genSpecRequestObjects (swaggerSpec, options) {
-    var refsLookup = buildSwaggerRefsLookup(swaggerSpec);
+    var refsLookup = buildSwaggerRefsLookup(swaggerSpec, options);
     var specRequests = {};
     var unknownTypeCounter = 0;
     var includeUnknownTypes = options && options.includeUnknownTypes;
@@ -278,7 +278,7 @@ function genSpecRequestObjects (swaggerSpec, options) {
             }
 
             var path = pathRoot[pathKey];
-            let {parameter, obj} = genObjectForPathBody(path, refsLookup);
+            let {parameter, obj} = genObjectForPathBody(path, refsLookup, options);
 
             if (!obj) {
                 continue;
@@ -304,8 +304,8 @@ function genSpecRequestObjects (swaggerSpec, options) {
     return specRequests;
 }
 
-function genSpecSchemaObjects (swaggerSpec) {
-    var refsLookup = buildSwaggerRefsLookup(swaggerSpec);
+function genSpecSchemaObjects (swaggerSpec, options) {
+    var refsLookup = buildSwaggerRefsLookup(swaggerSpec, options);
     var specObjs = {};
 
     for (var key in refsLookup) {
@@ -319,7 +319,7 @@ function genSpecSchemaObjects (swaggerSpec) {
     return specObjs;
 }
 
-function genObjectForPathBody (swaggerPath, swaggerRefsLookup) {
+function genObjectForPathBody (swaggerPath, swaggerRefsLookup, options) {
     var result = {
         parameter: undefined,
         obj: undefined
@@ -351,7 +351,7 @@ function genObjectForPathBody (swaggerPath, swaggerRefsLookup) {
     return result;
 }
 
-function buildSwaggerRefsLookup(swaggerSpec) {
+function buildSwaggerRefsLookup(swaggerSpec, options) {
     var refsLookup = {};
     var refCount = 0;
 
@@ -391,17 +391,17 @@ module.exports = {
     }),
     generateObjects: () => ({
         for: () => ({
-            specSchemas: (spec) => genSpecSchemaObjects(spec),
+            specSchemas: (spec, options) => genSpecSchemaObjects(spec, options),
             specRequests: (spec, options) => genSpecRequestObjects(spec, options),
             specResponses: (spec, options) => genSpecResponseObjects(spec, options)
         })
     }),
     generateObject: () => ({
         for: () => ({
-            pathBodyUsingRefs: (path, refs) => (genObjectForPathBody(path, refs)).obj,
+            pathBodyUsingRefs: (path, refs, options) => (genObjectForPathBody(path, refs, options)).obj,
             schemaUsingRefs: genSchemaObject,
-            schemaUsingSpec: (schema, spec) =>
-                genSchemaObject(schema, buildSwaggerRefsLookup(spec))
+            schemaUsingSpec: (schema, spec, options) =>
+                genSchemaObject(schema, buildSwaggerRefsLookup(spec, options))
         })
     })
 }
